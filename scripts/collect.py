@@ -78,8 +78,8 @@ try:
         img = bot.getImage()
         
         angle = np.clip(angle, -0.5, 0.5)
-        Kd = 20  # Base wheel speeds
-        Ka = 20  # Turn speed
+        Kd = 10  # Base wheel speeds
+        Ka = 10  # Turn speed
         left  = int(Kd + Ka*angle)
         right = int(Kd - Ka*angle)
         
