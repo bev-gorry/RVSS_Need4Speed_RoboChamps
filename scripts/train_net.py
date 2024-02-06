@@ -21,7 +21,6 @@ ds_dataloader = DataLoader(ds,batch_size=1,shuffle=True)
 all_y = []
 for S in ds_dataloader:
     im, y = S    
-        
     all_y += y.tolist()
 
 print(f'Input shape: {im.shape}')
