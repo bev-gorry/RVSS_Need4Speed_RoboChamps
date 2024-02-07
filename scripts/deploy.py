@@ -29,6 +29,10 @@ bot.setVelocity(0, 0)
 #INITIALISE NETWORK HERE
 
 #LOAD NETWORK WEIGHTS HERE
+PATH = f'./Train_Track1_Kd=10.pth'
+model = torch.load(PATH)
+model.load_state_dict(torch.load(PATH))
+
 
 #countdown before beginning
 print("Get ready...")
@@ -50,7 +54,7 @@ try:
         #TO DO: apply any necessary image transforms
 
         #TO DO: pass image through network get a prediction
-
+        predict = model(im)[0]
         #TO DO: convert prediction into a meaningful steering angle
 
         #TO DO: check for stop signs?
