@@ -15,8 +15,13 @@ import torchvision.transforms as transforms
 script_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.abspath(os.path.join(script_path, "../PenguinPi-robot/software/python/client/")))
 from pibot_client import PiBot
+from train_net import Net
 
 #python scripts/deploy.py --ip 169.254.143.30
+
+transform = transforms.Compose(
+[transforms.ToTensor(),
+    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
 parser = argparse.ArgumentParser(description='PiBot client')
 parser.add_argument('--ip', type=str, default='localhost', help='IP address of PiBot')
@@ -30,9 +35,10 @@ bot.setVelocity(0, 0)
 #INITIALISE NETWORK HERE
 
 #LOAD NETWORK WEIGHTS HERE
-PATH = f'./Train_Track1_Kd=10.pth'
-model = torch.load(PATH)
-model.load_state_dict(torch.load(PATH))
+TestPATH = f'./Train_Track1_Kd=10.pth'
+model = Net()
+model.load_state_dict(torch.load(TestPATH))
+model.eval()
 
 
 #countdown before beginning
@@ -53,9 +59,11 @@ try:
         im = bot.getImage()
 
         #TO DO: apply any necessary image transforms
+        print(im)
 
         #TO DO: pass image through network get a prediction
-        predict = model(im)[0]
+        output_tensor = model(transform(im).unsqueeze(0))
+        predict = output_tensor[0]
         #TO DO: convert prediction into a meaningful steering angle
         angle=predict
 
