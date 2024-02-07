@@ -11,12 +11,12 @@ import matplotlib.pyplot as plt
 from steerDS import SteerDataSet
 
 
-trainingFolderName='Track1_Kd=10'
-testingFolderName='Track1_Kd=15'
+trainingFolderName='TrackShort_Kd=10'
+testingFolderName='TrackShort_Kd=15'
 
-trainingFolderName='track2'
-# testingFolderName='track1'
-testingFolderName='Track1_Kd=10'
+trainingFolderName='TrackLong_Kd=10'
+# testingFolderName='TrackMed_Kd=10'
+testingFolderName='TrackShort_Kd=10'
 
 transform = transforms.Compose(
 [transforms.ToTensor(),
@@ -125,6 +125,7 @@ def Training(numEpochs=10):
     plt.plot(np.arange(total), predLables, 'm.-')
 
     plt.show()
+
 
 def Testing():
     PATH = f'./Train_Track1_Kd=10.pth'
