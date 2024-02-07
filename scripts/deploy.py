@@ -16,6 +16,7 @@ script_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.abspath(os.path.join(script_path, "../PenguinPi-robot/software/python/client/")))
 from pibot_client import PiBot
 
+#python scripts/deploy.py --ip 169.254.143.30
 
 parser = argparse.ArgumentParser(description='PiBot client')
 parser.add_argument('--ip', type=str, default='localhost', help='IP address of PiBot')
@@ -56,13 +57,13 @@ try:
         #TO DO: pass image through network get a prediction
         predict = model(im)[0]
         #TO DO: convert prediction into a meaningful steering angle
+        angle=predict
 
         #TO DO: check for stop signs?
-        
-        angle = 0
+        # angle = 0
 
-        Kd = 20 #base wheel speeds, increase to go faster, decrease to go slower
-        Ka = 20 #how fast to turn when given an angle
+        Kd = 10 #base wheel speeds, increase to go faster, decrease to go slower
+        Ka = 15 #how fast to turn when given an angle
         left  = int(Kd + Ka*angle)
         right = int(Kd - Ka*angle)
             

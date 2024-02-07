@@ -18,12 +18,14 @@ trainingFolderName='TrackLong_Kd=10'
 # testingFolderName='TrackMed_Kd=10'
 testingFolderName='TrackShort_Kd=10'
 
+TestPATH = f'./Train_Track1_Kd=10.pth'
+# TestPATH = f'./Train_track2.pth'
+
 transform = transforms.Compose(
 [transforms.ToTensor(),
     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
 script_path = os.path.dirname(os.path.realpath(__file__))
-
 
 ds_train = SteerDataSet(os.path.join(script_path, '..', 'data', 'train', trainingFolderName), '.jpg', transform)
 ds_train_dataloader = DataLoader(ds_train,batch_size=1,shuffle=True)
@@ -40,6 +42,7 @@ print(f"The train dataset contains {len(ds_train)} images and test dataset conta
 print(f'Input shape: {im.shape}')
 print('Outputs and their counts:')
 print(np.unique(all_y, return_counts = True))
+
 
 class Net(nn.Module):
     def __init__(self):
@@ -127,10 +130,9 @@ def Training(numEpochs=10):
     plt.show()
 
 
-def Testing():
-    PATH = f'./Train_Track1_Kd=10.pth'
+def Testing(TestPATH):
     model = Net()
-    model.load_state_dict(torch.load(PATH))
+    model.load_state_dict(torch.load(TestPATH))
     model.eval()
 
     # test the network every epoch on test example
@@ -162,5 +164,5 @@ def Testing():
     plt.show()
 
 
-Testing()
+Testing(TestPATH)
 
