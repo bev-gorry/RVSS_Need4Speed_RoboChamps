@@ -15,7 +15,7 @@ import torchvision.transforms as transforms
 script_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.abspath(os.path.join(script_path, "../PenguinPi-robot/software/python/client/")))
 from pibot_client import PiBot
-from train_net import Net
+from steerDS import Net
 
 #python scripts/deploy.py --ip 169.254.143.30
 

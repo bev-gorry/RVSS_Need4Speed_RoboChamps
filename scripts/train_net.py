@@ -8,17 +8,23 @@ import torch.nn.functional as F
 import torch.optim as optim
 import time 
 import matplotlib.pyplot as plt
-from steerDS import SteerDataSet
+from steerDS import SteerDataSet, Net
 
+'''DAY1 Data COllection'''
+day1Filenames=['TrackShort_Kd=10', 'TrackShort_Kd=15', 'Track0_Kd=5_Ka=15','Track0_Kd=10_Ka=25', 'Track0_Kd=20_Ka=25', 'Track1_Kd=5_Ka=15', 'TrackMed_Kd=10', 'TrackLong']
+trainingFolderName=day1Filenames[7]
+# testingFolderName=day1Filenames[0] #[5]
 
-trainingFolderName='TrackShort_Kd=10'
-testingFolderName='TrackShort_Kd=15'
+'''DAY2 Morning Data Collection'''
+day2Filenames=['TrackLong_Kd=10']
+# trainingFolderName=day2Filenames[0]
+testingFolderName=day2Filenames[0]
 
-trainingFolderName='TrackLong_Kd=10'
-# testingFolderName='TrackMed_Kd=10'
-testingFolderName='TrackShort_Kd=10'
-
-TestPATH = f'./Train_Track1_Kd=10.pth'
+'''TrainedNetworks'''
+# TestPATH = f'./Network_L1Loss.pth'
+# TestPATH = f'./Network_MSEloss_CropThird.pth'
+TestPATH = f'./Network_L1loss_CropThird.pth'
+# TestPATH = f'./Train_Track1_Kd=10.pth'
 # TestPATH = f'./Train_track2.pth'
 
 transform = transforms.Compose(
@@ -33,43 +39,34 @@ ds_train_dataloader = DataLoader(ds_train,batch_size=1,shuffle=True)
 ds_test = SteerDataSet(os.path.join(script_path, '..', 'data', 'train', testingFolderName), '.jpg', transform)
 ds_test_dataloader = DataLoader(ds_test,batch_size=1,shuffle=True)
 
+def analyseData():
+    fig, (ax1,ax2)= plt.subplots(1,2)
+    all_y = []
+    for S in ds_train_dataloader:
+        im, y = S
+        all_y += y.tolist()
 
-all_y = []
-for S in ds_train_dataloader:
-    im, y = S    
-    all_y += y.tolist()
-print(f"The train dataset contains {len(ds_train)} images and test dataset contain {len(ds_test)} images ")
-print(f'Input shape: {im.shape}')
-print('Outputs and their counts:')
-print(np.unique(all_y, return_counts = True))
+        ax1.imshow(im.squeeze(0).permute(1, 2, 0).numpy())
+        im=im[:,:,60:240,:]  
+        ax2.imshow(im.squeeze(0).permute(1, 2, 0).numpy())
+        plt.pause(0.1)
+    plt.show()
+
+    print(f"The train dataset contains {len(ds_train)} images and test dataset contain {len(ds_test)} images ")
+    print(f'Input shape: {im.shape}')
+    print('Outputs and their counts:')
+    print(np.unique(all_y, return_counts = True))
 
 
-class Net(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.conv1 = nn.Conv2d(3, 6, 5)
-        self.pool = nn.MaxPool2d(4, 4)
-        self.conv2 = nn.Conv2d(6, 16, 5)
-        # self.conv3 = nn.Conv2d(6, 16, 5)
-        self.fc1 = nn.Linear(3744,120)
-        self.fc2 = nn.Linear(120, 84)
-        self.fc3 = nn.Linear(84, 1)
-
-    def forward(self, x):
-        x = self.pool(F.relu(self.conv1(x)))
-        x = self.pool(F.relu(self.conv2(x)))
-        x = torch.flatten(x, 1) # flatten all dimensions except batch
-        # print(x.size())
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = F.sigmoid(self.fc3(x))
-        x=(x-0.5)*2*3.14
-        return x
+def imagePreprocessing(im):
+    im=im[:,:,60:240,:]  
+    # im=F.local_response_norm(im, size=5)
+    return im
 
 
 def Training(numEpochs=10):
     net=Net()
-    criterion = nn.MSELoss()
+    criterion = nn.L1Loss()
     optimizer = optim.Adam(net.parameters())
 
     for epoch in range(numEpochs):  # loop over the dataset multiple times
@@ -78,12 +75,14 @@ def Training(numEpochs=10):
         for i, data in enumerate(ds_train_dataloader, 0):
             # get the inputs; data is a list of [inputs, labels]
             inputs, labels = data
+            inputs=imagePreprocessing(inputs)
+
             # zero the parameter gradients
             optimizer.zero_grad()
             # forward + backward + optimize
             outputs = net(inputs)
             # print(outputs)
-            loss = criterion(outputs, labels)
+            loss = criterion(outputs, labels.unsqueeze(1))
             loss.backward()
             optimizer.step()
             # print statistics
@@ -106,7 +105,7 @@ def Training(numEpochs=10):
             for data in ds_test_dataloader:
                 # load images and labels
                 images, labels = data
-
+                images=imagePreprocessing(images)
                 output = net(images)
                 # note here we take the max of all probability
                 predicted = output[0]#torch.max(output, 1)
@@ -115,19 +114,13 @@ def Training(numEpochs=10):
                 predLables.append(predicted)
                 GT.append(labels)
                 total += labels.size(0)
-                correct += (predicted == labels).sum().item()
+                correct += (abs(predicted - labels)<0.1).sum().item()
         
         print('Epoch', epoch+1, 'took', end_time-start_time, 'seconds')
         print('Accuracy of the network after', epoch+1, 'epochs is' , 100*correct/total)
         
     print('Finished Training')
-    PATH = f'./Train_{trainingFolderName}.pth'
-    torch.save(net.state_dict(), PATH)
-
-    plt.plot(np.arange(total), GT, 'g.-')
-    plt.plot(np.arange(total), predLables, 'm.-')
-
-    plt.show()
+    torch.save(net.state_dict(), TestPATH)
 
 
 def Testing(TestPATH):
@@ -145,24 +138,30 @@ def Testing(TestPATH):
         for data in ds_test_dataloader:
             # load images and labels
             images, labels = data
+            images=imagePreprocessing(images)
 
             output_tensor = model(images)
             # note here we take the max of all probability
             predicted = output_tensor[0]#torch.max(output, 1)
             # print(output)
             
-            predLables.append(predicted)
-            GT.append(labels)
+            predLables.append(predicted.detach().numpy())
+            GT.append(labels.detach().numpy())
             total += labels.size(0)
-            correct += (predicted == labels).sum().item()
+            correct += (abs(predicted - labels)<0.1).sum().item()
     
     print('Accuracy of the network after is' , 100*correct/total)
 
-    plt.plot(np.arange(total), GT, 'g.-')
-    plt.plot(np.arange(total), predLables, 'm.-')
+    fig, (ax1,ax2)= plt.subplots(1,2)
+    ax1.plot(np.arange(total), GT, 'g.-')
+    ax1.plot(np.arange(total), predLables, 'm.-')
+
+    ax2.hist( abs(np.array(GT)-np.array(predLables)), bins=50)
+    ax2.set_xlim([0,3.14])
 
     plt.show()
 
 
+Training(numEpochs=10)
 Testing(TestPATH)
 
