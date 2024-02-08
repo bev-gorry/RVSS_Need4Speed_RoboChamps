@@ -8,24 +8,30 @@ import torch.nn.functional as F
 import torch.optim as optim
 import time 
 import matplotlib.pyplot as plt
-from steerDS import SteerDataSet, Net
+from steerDS import SteerDataSet, Net, Old_Net, ConvMixer
 
 '''DAY1 Data COllection'''
 day1Filenames=['TrackShort_Kd=10', 'TrackShort_Kd=15', 'Track0_Kd=5_Ka=15','Track0_Kd=10_Ka=25', 'Track0_Kd=20_Ka=25', 'Track1_Kd=5_Ka=15', 'TrackMed_Kd=10', 'TrackLong']
-trainingFolderName=day1Filenames[7]
-# testingFolderName=day1Filenames[0] #[5]
+# trainingFolderName=day1Filenames[7]
+testingFolderName=day1Filenames[7] #[5]
 
 '''DAY2 Morning Data Collection'''
 day2Filenames=['TrackLong_Kd=10']
-# trainingFolderName=day2Filenames[0]
-testingFolderName=day2Filenames[0]
+trainingFolderName=day2Filenames[0]
+# testingFolderName=day2Filenames[0]
 
 '''TrainedNetworks'''
-# TestPATH = f'./Network_L1Loss.pth'
-# TestPATH = f'./Network_MSEloss_CropThird.pth'
-TestPATH = f'./Network_L1loss_CropThird.pth'
-# TestPATH = f'./Train_Track1_Kd=10.pth'
-# TestPATH = f'./Train_track2.pth'
+folderName='driveNetworks/'
+TestPATH = f'./{folderName}Network_L1loss_CropThird_ConvMixer.pth'
+# TestPATH = f'./{folderName}Network_L1loss_CropThird_MoreData.pth'
+# TestPATH = f'./{folderName}Network_L1Loss_PrevAngl.pth'           #34
+# TestPATH = f'./{folderName}Network_MSEloss_CropThird.pth'
+# TestPATH = f'./{folderName}Network_L1loss_CropHalf_Normalise.pth' #48
+# TestPATH = f'./{folderName}Network_L1loss_CropHalf.pth'           #53
+# TestPATH = f'./{folderName}Network_L1loss_CropThird.pth'          #62
+# TestPATH = f'./{folderName}Network_L1loss_CropThird_1.pth'        #41
+# TestPATH = f'./{folderName}Train_Track1_Kd=10.pth'
+# TestPATH = f'./{folderName}Train_track2.pth'
 
 transform = transforms.Compose(
 [transforms.ToTensor(),
@@ -59,13 +65,14 @@ def analyseData():
 
 
 def imagePreprocessing(im):
-    im=im[:,:,60:240,:]  
+    im=im[:,:,60:240,:]  #third 
+    # im=im[:,:,120:240,:]  
     # im=F.local_response_norm(im, size=5)
     return im
 
 
-def Training(numEpochs=10):
-    net=Net()
+def Training(numEpochs=10, net=Net()):
+    # net=Net()
     criterion = nn.L1Loss()
     optimizer = optim.Adam(net.parameters())
 
@@ -75,6 +82,7 @@ def Training(numEpochs=10):
         for i, data in enumerate(ds_train_dataloader, 0):
             # get the inputs; data is a list of [inputs, labels]
             inputs, labels = data
+            labels=labels
             inputs=imagePreprocessing(inputs)
 
             # zero the parameter gradients
@@ -94,6 +102,7 @@ def Training(numEpochs=10):
         print(f'Avergae loss: {running_loss/len(ds_train)}')
         # end for over minibatches epoch finishes
         end_time = time.time()
+        
 
         # test the network every epoch on test example
         correct = 0
@@ -122,9 +131,8 @@ def Training(numEpochs=10):
     print('Finished Training')
     torch.save(net.state_dict(), TestPATH)
 
-
-def Testing(TestPATH):
-    model = Net()
+def Testing(TestPATH, model=Net()):
+    # model = Net()
     model.load_state_dict(torch.load(TestPATH))
     model.eval()
 
@@ -156,12 +164,12 @@ def Testing(TestPATH):
     ax1.plot(np.arange(total), GT, 'g.-')
     ax1.plot(np.arange(total), predLables, 'm.-')
 
-    ax2.hist( abs(np.array(GT)-np.array(predLables)), bins=50)
+    ax2.hist(abs(np.array(GT)-np.array(predLables)), bins=50)
     ax2.set_xlim([0,3.14])
 
     plt.show()
 
 
-Training(numEpochs=10)
-Testing(TestPATH)
+Training(numEpochs=10, net=ConvMixer(124,8))
+# Testing(TestPATH,  model=ConvMixer())
 
