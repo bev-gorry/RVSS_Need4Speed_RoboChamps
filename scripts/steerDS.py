@@ -14,6 +14,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
+transform = transforms.Compose(
+[transforms.ToTensor(),
+    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+    transforms.Resize((100,100))]
+    )
+
 class SteerDataSet(Dataset):
     
     def __init__(self,root_folder,img_ext = ".jpg" , transform=None):
@@ -128,3 +134,14 @@ def ConvMixer(dim, depth, kernel_size=9, patch_size=7, nclasses=1):
         nn.Flatten(),
         nn.Linear(dim, nclasses)
         )
+
+
+def imagePreprocessing(im, flip=1):
+    
+    im=im[:,:,im.size(2)//3:,:]  #third 
+    
+    # if flip==-1:
+    #     im=torch.flip(im, (3,))
+    # im=im[:,:,120:240,:]  
+    # im=F.local_response_norm(im, size=5)
+    return im

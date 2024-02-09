@@ -8,7 +8,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 import time 
 import matplotlib.pyplot as plt
-from steerDS import SteerDataSet, Net, Old_Net, ConvMixer
+from steerDS import SteerDataSet, Net, Old_Net, ConvMixer, transform
 
 '''DAY1 Data COllection'''
 day1Filenames=['TrackShort_Kd=10', 'TrackShort_Kd=15', 'Track0_Kd=5_Ka=15','Track0_Kd=10_Ka=25', 'Track0_Kd=20_Ka=25', 'Track1_Kd=5_Ka=15', 'TrackMed_Kd=10', 'TrackLong']
@@ -42,11 +42,7 @@ TestPATH = f'./{folderName}Network_L1loss_CropThird_Segments_Even1.pth'   #
 # TestPATH = f'./{folderName}Train_Track1_Kd=10.pth'
 # TestPATH = f'./{folderName}Train_track2.pth'
 
-transform = transforms.Compose(
-[transforms.ToTensor(),
-    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
-    transforms.Resize((100,100))]
-    )
+
 
 script_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -74,17 +70,6 @@ def analyseData():
     print(f'Input shape: {im.shape}')
     print('Outputs and their counts:')
     print(np.unique(all_y, return_counts = True))
-
-
-def imagePreprocessing(im, flip=1):
-    
-    im=im[:,:,im.size(2)//3:,:]  #third 
-    
-    # if flip==-1:
-    #     im=torch.flip(im, (3,))
-    # im=im[:,:,120:240,:]  
-    # im=F.local_response_norm(im, size=5)
-    return im
 
 
 def training(numEpochs=10, net=Net()):

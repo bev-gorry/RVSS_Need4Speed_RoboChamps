@@ -11,17 +11,17 @@ import torch.nn as nn
 import argparse
 import torch.nn as nn
 import torch.nn.functional as F
-import torchvision.transforms as transforms
+# import torchvision.transforms as transforms
 script_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.abspath(os.path.join(script_path, "../PenguinPi-robot/software/python/client/")))
 from pibot_client import PiBot
-from steerDS import Net
+from steerDS import Net, imagePreprocessing, transform
 
 #python scripts/deploy.py --ip 169.254.143.30
 
-transform = transforms.Compose(
-[transforms.ToTensor(),
-    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+# transform = transforms.Compose(
+# [transforms.ToTensor(),
+#     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
 parser = argparse.ArgumentParser(description='PiBot client')
 parser.add_argument('--ip', type=str, default='localhost', help='IP address of PiBot')
@@ -58,7 +58,8 @@ try:
         # get an image from the the robot
         im_cv = bot.getImage()
         im=transform(im_cv).unsqueeze(0)
-        im=im[:,:,60:240,:]
+        im=imagePreprocessing(im)
+        # im=im[:,:,60:240,:]
 
         #TO DO: apply any necessary image transforms
         #print(im)
