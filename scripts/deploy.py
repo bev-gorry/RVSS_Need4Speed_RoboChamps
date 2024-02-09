@@ -35,7 +35,7 @@ bot.setVelocity(0, 0)
 #INITIALISE NETWORK HERE
 
 #LOAD NETWORK WEIGHTS HERE
-TestPATH = f'./Train_Track1_Kd=10.pth'
+TestPATH = f'./driveNetworks/Network_L1loss_CropThird.pth'
 model = Net()
 model.load_state_dict(torch.load(TestPATH))
 model.eval()
@@ -56,13 +56,17 @@ try:
     angle = 0
     while True:
         # get an image from the the robot
-        im = bot.getImage()
+        im_cv = bot.getImage()
+        im=transform(im_cv).unsqueeze(0)
+        im=im[:,:,60:240,:]
 
         #TO DO: apply any necessary image transforms
-        print(im)
+        #print(im)
+        cv2.imshow("BotCam", im_cv)
+        cv2.waitKey(10)
 
         #TO DO: pass image through network get a prediction
-        output_tensor = model(transform(im).unsqueeze(0))
+        output_tensor = model(im)
         predict = output_tensor[0]
         #TO DO: convert prediction into a meaningful steering angle
         angle=predict
