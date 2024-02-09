@@ -23,7 +23,7 @@ testingFolderName=day2Filenames[0]
 '''DAY4 Morning Data Collection'''
 day4Filenames=['TrackLongest_Kd=10_Ka=10','TrackSegments', 'EvenDistribution']
 # day4Filenames=['EvenDistribution','TrackSegments', 'EvenDistribution']
-trainingFolderName=day4Filenames[2]
+trainingFolderName=day4Filenames[1]
 testingFolderName=day4Filenames[0]
 
 '''TrainedNetworks'''
@@ -31,7 +31,7 @@ folderName='driveNetworks/'
 # TestPATH = f'./{folderName}Network_L1loss_CropThird_ConvMixer.pth'
 # TestPATH = f'./{folderName}Network_L1loss_CropThird_MoreData.pth' #47 but more consistent
 # TestPATH = f'./{folderName}Network_L1loss_CropThird_MoreData_2.pth'  #45
-TestPATH = f'./{folderName}Network_L1loss_CropThird_Segments_Even0.pth'   #
+TestPATH = f'./{folderName}Network_L1loss_CropThird_Segments_MoreData3.pth'   #
 # TestPATH = f'./{folderName}Network_L1loss_CropThird_Segments_SGD.pth' #40.6
 # TestPATH = f'./{folderName}Network_L1Loss_PrevAngl.pth'           #34
 # TestPATH = f'./{folderName}Network_MSEloss_CropThird.pth'
