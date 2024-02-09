@@ -17,8 +17,12 @@ testingFolderName=day1Filenames[7] #[5]
 
 '''DAY2 Morning Data Collection'''
 day2Filenames=['TrackLong_Kd=10']
-trainingFolderName=day2Filenames[0]
-# testingFolderName=day2Filenames[0]
+# trainingFolderName=day2Filenames[0]
+testingFolderName=day2Filenames[0]
+
+'''DAY4 Morning Data Collection'''
+day4Filenames=['TrackLongest_Kd=10_Ka=10']
+trainingFolderName=day4Filenames[0]
 
 '''TrainedNetworks'''
 folderName='driveNetworks/'
