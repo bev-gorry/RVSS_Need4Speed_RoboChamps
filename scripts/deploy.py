@@ -35,7 +35,7 @@ bot.setVelocity(0, 0)
 #INITIALISE NETWORK HERE
 
 #LOAD NETWORK WEIGHTS HERE
-TestPATH = f'./driveNetworks/Network_L1loss_CropThird.pth'
+TestPATH = f'./driveNetworks/Network_L1loss_CropThird_MoreData_2.pth'
 model = Net()
 model.load_state_dict(torch.load(TestPATH))
 model.eval()

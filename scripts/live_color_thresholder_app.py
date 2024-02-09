@@ -7,6 +7,8 @@ import argparse
 script_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.abspath(os.path.join(script_path, "../PenguinPi-robot/software/python/client/")))
 from pibot_client import PiBot
+import torchvision.transforms as transforms
+from machinevisiontoolbox import Image
 
 def nothing(x):
   pass
@@ -30,6 +32,10 @@ cv2.createTrackbar("HMin", "Thresholder_App",0,179,nothing)
 parser = argparse.ArgumentParser(description='PiBot client')
 parser.add_argument('--ip', type=str, default='localhost', help='IP address of PiBot')
 args = parser.parse_args()
+
+transform = transforms.Compose(
+[transforms.ToTensor(),
+    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
 bot = PiBot(ip=args.ip)
 bot.setVelocity(0, 0)
@@ -59,12 +65,24 @@ while(1):
    #ret, frame = cap.read()
    #cv2.imshow('frame',frame)
    img = bot.getImage()
+  #  img=transform(img).unsqueeze(0)
+   img=img[60:240,:]
+   gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+   gray=cv2.bitwise_not(cv2.threshold(gray,128, 255,cv2.THRESH_BINARY)[1])
+  #  contours=cv2.threshold(gray)
+  #  blobs = gray.blobs()
+   
+  #  blobs=Image(gray).blobs()
+  #  print(blobs)
+
+   
    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
    mask = cv2.inRange(hsv, min_, max_)
 
    thresholded_img = cv2.bitwise_and(img, img, mask= mask)
 
+   
    cv2.imshow("Thresholder_App",thresholded_img)
 
    k = cv2.waitKey(1) & 0xFF
