@@ -17,6 +17,7 @@ sys.path.append(os.path.abspath(os.path.join(script_path, "../PenguinPi-robot/so
 from pibot_client import PiBot
 from steerDS import Net, imagePreprocessing, transform
 
+
 #python scripts/deploy.py --ip 169.254.143.30
 
 # transform = transforms.Compose(
@@ -35,7 +36,7 @@ bot.setVelocity(0, 0)
 #INITIALISE NETWORK HERE
 
 #LOAD NETWORK WEIGHTS HERE
-TestPATH = f'./driveNetworks/Network_L1loss_CropThird_MoreData_2.pth'
+TestPATH = f'./driveNetworks/Network_L1loss_CropThird_Segments_SGD.pth'
 model = Net()
 model.load_state_dict(torch.load(TestPATH))
 model.eval()
