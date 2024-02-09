@@ -13,6 +13,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torchvision import transforms
 from machinevisiontoolbox import Image 
+from time import sleep
 # import torchvision.transforms as transforms
 script_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.abspath(os.path.join(script_path, "../PenguinPi-robot/software/python/client/")))
@@ -86,47 +87,8 @@ try:
         kernel = np.ones((5,5), np.uint8)
         mask = cv2.morphologyEx(binary_mask, cv2.MORPH_OPEN, kernel)
         # print(Image(mask).blobs)
-        print(np.sum(mask)>100000)
-
-        # im1 = cv2.bitwise_and(im, im, mask=mask)
-        # mask = cv2.bitwise_or(binary_mask_1, binary_mask_2)
-        # im = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
-        # im = cv2.threshold(im, 80, 255, cv2.THRESH_BINARY)[1]
-
-        # params = cv2.SimpleBlobDetector_Params()
-        # # Change thresholds
-        # params.minThreshold = 5
-        # params.maxThreshold = 200
-
-        # # Filter by Area.
-        # params.filterByArea = True
-        # params.minArea = 15
-
-        # # Filter by Circularity
-        # params.filterByCircularity = False
-
-        # # Filter by Convexity
-        # params.filterByConvexity = False
-
-        # # Filter by Inertia
-        # params.filterByInertia = True
-        # params.minInertiaRatio = 0.01
-
-        # # Create a detector with the parameters
-        # detector = cv2.SimpleBlobDetector_create(params)
-
-        # # Detect blobs
-        # keypoints = detector.detect(im)
-
-        # # Draw detected blobs as red circles
-        # blank = np.zeros((1, 1))
-        # blobs = cv2.drawKeypoints(im, keypoints, blank, (0, 0, 255),
-        #                         cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-
-        # for idx, kp in enumerate(keypoints):
-        #     print(f"Blob {idx+1}: Centroid = {kp.pt}, Area = {kp.size}")
-
-        ##############################
+        # print()
+        
         
         # im=im[:,:,60:240,:]
 
@@ -143,8 +105,33 @@ try:
         angle=predict
 
         #TO DO: check for stop signs?
-        # angle = 0
+        t = 0
+        recentlySeen = False
+        print(np.sum(mask)>100000)
+        if (np.sum(mask)>100000) == True and not recentlySeen:
+            print("SAW STOP SIGN")
+            t=time.time()
+            angle=0
+            bot.setVelocity(0, 0)
+            sleep(3)
+            stop = False
+            recentlySeen = True
+            print("STOP SET TO FALSE, RECENTLY SEEN SET TO TRUE")
+            
+            ### let 3 seconds pass, then continue moving
+            if (time.time() - t) > 3:
+                recentlySeen = False
+                Kd = 10 #base wheel speeds, increase to go faster, decrease to go slower
+                Ka = 15 #how fast to turn when given an angle
+                left  = int(Kd + Ka*angle)
+                right = int(Kd - Ka*angle)
+                    
+                bot.setVelocity(left, right)
+                sleep(3)
+                print("OVER 3 SECS PASSED, RECENTLY SEEN SET TO FALSE")
+                continue
 
+        ### PID control to command the robot forwards
         Kd = 10 #base wheel speeds, increase to go faster, decrease to go slower
         Ka = 15 #how fast to turn when given an angle
         left  = int(Kd + Ka*angle)
