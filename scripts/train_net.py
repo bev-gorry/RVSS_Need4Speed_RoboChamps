@@ -21,8 +21,8 @@ day2Filenames=['TrackLong_Kd=10']
 testingFolderName=day2Filenames[0]
 
 '''DAY4 Morning Data Collection'''
-# day4Filenames=['TrackLongest_Kd=10_Ka=10','TrackSegments', 'EvenDistribution']
-day4Filenames=['EvenDistribution','TrackSegments', 'EvenDistribution']
+day4Filenames=['TrackLongest_Kd=10_Ka=10','TrackSegments', 'EvenDistribution']
+# day4Filenames=['EvenDistribution','TrackSegments', 'EvenDistribution']
 trainingFolderName=day4Filenames[2]
 testingFolderName=day4Filenames[0]
 
@@ -31,7 +31,7 @@ folderName='driveNetworks/'
 # TestPATH = f'./{folderName}Network_L1loss_CropThird_ConvMixer.pth'
 # TestPATH = f'./{folderName}Network_L1loss_CropThird_MoreData.pth' #47 but more consistent
 # TestPATH = f'./{folderName}Network_L1loss_CropThird_MoreData_2.pth'  #45
-TestPATH = f'./{folderName}Network_L1loss_CropThird_Segments.pth'   #
+TestPATH = f'./{folderName}Network_L1loss_CropThird_Segments_Even1.pth'   #
 # TestPATH = f'./{folderName}Network_L1loss_CropThird_Segments_SGD.pth' #40.6
 # TestPATH = f'./{folderName}Network_L1Loss_PrevAngl.pth'           #34
 # TestPATH = f'./{folderName}Network_MSEloss_CropThird.pth'
@@ -195,7 +195,7 @@ def testing(TestPATH, model=Net(), plot=True):
 
 
 # analyseData()
-training(numEpochs=20)
+training(numEpochs=100)
 
 testing(TestPATH)
 
