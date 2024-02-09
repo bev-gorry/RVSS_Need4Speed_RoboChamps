@@ -39,7 +39,7 @@ bot.setVelocity(0, 0)
 #INITIALISE NETWORK HERE
 
 #LOAD NETWORK WEIGHTS HERE
-TestPATH = f'./driveNetworks/Network_L1loss_CropThird_Segments_Even0.pth'
+TestPATH = f'./driveNetworks/Network_L1loss_CropThird_Segments_Even1.pth'
 model = Net()
 model.load_state_dict(torch.load(TestPATH))
 model.eval()
@@ -74,26 +74,16 @@ try:
         lower_red2 = np.array([0, 86, 51])
         upper_red2 = np.array([3, 211, 239])
 
-        # lower_red = np.array([0, 86, 51])
-        # upper_red = np.array([179, 211, 239])
-        # binary_mask = cv2.inRange(hsv, lower_red, upper_red)
-
         binary_mask_1 = cv2.inRange(hsv, lower_red1, upper_red1)
         binary_mask_2 = cv2.inRange(hsv, lower_red2, upper_red2)
         binary_mask = cv2.bitwise_or(binary_mask_1, binary_mask_2)
         
-
-
         kernel = np.ones((5,5), np.uint8)
         mask = cv2.morphologyEx(binary_mask, cv2.MORPH_OPEN, kernel)
-        # print(Image(mask).blobs)
-        # print()
-        
-        
+                
         # im=im[:,:,60:240,:]
 
         #TO DO: apply any necessary image transforms
-        #print(im)
         cv2.imshow("BotCam", im_cv)
         cv2.imshow("Stop Sign Mask", mask)
         cv2.waitKey(10)
@@ -107,16 +97,14 @@ try:
         #TO DO: check for stop signs?
         t = 0
         recentlySeen = False
-        print(np.sum(mask)>100000)
-        if (np.sum(mask)>100000) == True and not recentlySeen:
-            print("SAW STOP SIGN")
+        if (np.sum(mask)>120000) == True and not recentlySeen:
+            print("STOP SIGN DETECTED")
             t=time.time()
             angle=0
             bot.setVelocity(0, 0)
             sleep(3)
             stop = False
             recentlySeen = True
-            print("STOP SET TO FALSE, RECENTLY SEEN SET TO TRUE")
             
             ### let 3 seconds pass, then continue moving
             if (time.time() - t) > 3:
@@ -128,12 +116,12 @@ try:
                     
                 bot.setVelocity(left, right)
                 sleep(3)
-                print("OVER 3 SECS PASSED, RECENTLY SEEN SET TO FALSE")
+                print("OVER 3 SECS PASSED, CONTINUING THROUGH SIGN")
                 continue
 
         ### PID control to command the robot forwards
-        Kd = 10 #base wheel speeds, increase to go faster, decrease to go slower
-        Ka = 15 #how fast to turn when given an angle
+        Kd = 10 # default 10, base wheel speeds, increase to go faster, decrease to go slower
+        Ka = 15 #default 15, how fast to turn when given an angle
         left  = int(Kd + Ka*angle)
         right = int(Kd - Ka*angle)
             
