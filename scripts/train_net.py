@@ -8,7 +8,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 import time 
 import matplotlib.pyplot as plt
-from steerDS import SteerDataSet, Net, Old_Net, ConvMixer, transform
+from steerDS import SteerDataSet, Net, Old_Net, ConvMixer, transform, imagePreprocessing
 
 '''DAY1 Data COllection'''
 day1Filenames=['TrackShort_Kd=10', 'TrackShort_Kd=15', 'Track0_Kd=5_Ka=15','Track0_Kd=10_Ka=25', 'Track0_Kd=20_Ka=25', 'Track1_Kd=5_Ka=15', 'TrackMed_Kd=10', 'TrackLong']
@@ -31,7 +31,7 @@ folderName='driveNetworks/'
 # TestPATH = f'./{folderName}Network_L1loss_CropThird_ConvMixer.pth'
 # TestPATH = f'./{folderName}Network_L1loss_CropThird_MoreData.pth' #47 but more consistent
 # TestPATH = f'./{folderName}Network_L1loss_CropThird_MoreData_2.pth'  #45
-TestPATH = f'./{folderName}Network_L1loss_CropThird_Segments_Even1.pth'   #
+TestPATH = f'./{folderName}Network_L1loss_CropThird_Segments_Even0.pth'   #
 # TestPATH = f'./{folderName}Network_L1loss_CropThird_Segments_SGD.pth' #40.6
 # TestPATH = f'./{folderName}Network_L1Loss_PrevAngl.pth'           #34
 # TestPATH = f'./{folderName}Network_MSEloss_CropThird.pth'
