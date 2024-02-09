@@ -36,9 +36,13 @@ class SteerDataSet(Dataset):
         else:
             img = self.transform(img)   
         
-        steering = f.split("/")[-1].split(self.img_ext)[0][6:]
-        steering = np.float32(steering)        
-                      
+        # steering = f.split("/")[-1].split(self.img_ext)[0][6:]
+        # steering = np.float32(steering)    
+        if f[-9]== '-':
+            steer=f[-9:][:-4]
+        else: 
+            steer=f[-8:][:-4]    
+        steering = np.float32(steer)               
         return img, steering
 
 
@@ -51,20 +55,21 @@ class Net(nn.Module):
         self.conv3 = nn.Conv2d(16, 32, 5)
         self.conv4 = nn.Conv2d(32, 64, 5)
         # self.conv3 = nn.Conv2d(6, 16, 5)
-        self.fc1 = nn.Linear(51744,120)
+        self.fc1 = nn.Linear(4576,520)
         # self.fc1 = nn.Linear(33264,120)
-        # self.fc2 = nn.Linear(120, 84)
-        self.fc3 = nn.Linear(120, 1)
+        # self.fc2 = nn.Linear(520, 84)
+        self.fc3 = nn.Linear(520, 1)
 
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
         x = self.pool(F.relu(self.conv2(x)))
+
         x = torch.flatten(x, 1) # flatten all dimensions except batch
         # print(x.size())
         x = F.relu(self.fc1(x))
         # x = F.relu(self.fc2(x))
         x = torch.sigmoid(self.fc3(x))
-        x=(x-0.5)*2*3.14
+        x=(x-0.5)*2
         return x
 
 

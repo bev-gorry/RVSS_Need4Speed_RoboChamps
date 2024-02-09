@@ -21,14 +21,18 @@ day2Filenames=['TrackLong_Kd=10']
 testingFolderName=day2Filenames[0]
 
 '''DAY4 Morning Data Collection'''
-day4Filenames=['TrackLongest_Kd=10_Ka=10']
-trainingFolderName=day4Filenames[0]
+# day4Filenames=['TrackLongest_Kd=10_Ka=10','TrackSegments', 'EvenDistribution']
+day4Filenames=['EvenDistribution','TrackSegments', 'EvenDistribution']
+trainingFolderName=day4Filenames[2]
+testingFolderName=day4Filenames[0]
 
 '''TrainedNetworks'''
 folderName='driveNetworks/'
 # TestPATH = f'./{folderName}Network_L1loss_CropThird_ConvMixer.pth'
 # TestPATH = f'./{folderName}Network_L1loss_CropThird_MoreData.pth' #47 but more consistent
-TestPATH = f'./{folderName}Network_L1loss_CropThird_MoreData_2.pth'  #45
+# TestPATH = f'./{folderName}Network_L1loss_CropThird_MoreData_2.pth'  #45
+TestPATH = f'./{folderName}Network_L1loss_CropThird_Segments.pth'   #
+# TestPATH = f'./{folderName}Network_L1loss_CropThird_Segments_SGD.pth' #40.6
 # TestPATH = f'./{folderName}Network_L1Loss_PrevAngl.pth'           #34
 # TestPATH = f'./{folderName}Network_MSEloss_CropThird.pth'
 # TestPATH = f'./{folderName}Network_L1loss_CropHalf_Normalise.pth' #48
@@ -40,12 +44,14 @@ TestPATH = f'./{folderName}Network_L1loss_CropThird_MoreData_2.pth'  #45
 
 transform = transforms.Compose(
 [transforms.ToTensor(),
-    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+    transforms.Resize((100,100))]
+    )
 
 script_path = os.path.dirname(os.path.realpath(__file__))
 
 ds_train = SteerDataSet(os.path.join(script_path, '..', 'data', 'train', trainingFolderName), '.jpg', transform)
-ds_train_dataloader = DataLoader(ds_train,batch_size=1,shuffle=True)
+ds_train_dataloader = DataLoader(ds_train,batch_size=8,shuffle=True)
 
 ds_test = SteerDataSet(os.path.join(script_path, '..', 'data', 'train', testingFolderName), '.jpg', transform)
 ds_test_dataloader = DataLoader(ds_test,batch_size=1,shuffle=True)
@@ -57,12 +63,13 @@ def analyseData():
         im, y = S
         all_y += y.tolist()
 
-        ax1.imshow(im.squeeze(0).permute(1, 2, 0).numpy())
-        im=im[:,:,60:240,:]  
-        ax2.imshow(im.squeeze(0).permute(1, 2, 0).numpy())
-        plt.pause(0.1)
+    #     ax1.imshow(im.squeeze(0).permute(1, 2, 0).numpy())
+    #     im=im[:,:,60:240,:]  
+    #     ax2.imshow(im.squeeze(0).permute(1, 2, 0).numpy())
+    #     plt.pause(0.1)
+    # plt.show()
+    plt.hist(all_y, bins = 100)
     plt.show()
-
     print(f"The train dataset contains {len(ds_train)} images and test dataset contain {len(ds_test)} images ")
     print(f'Input shape: {im.shape}')
     print('Outputs and their counts:')
@@ -70,47 +77,51 @@ def analyseData():
 
 
 def imagePreprocessing(im, flip=1):
-    im=im[:,:,60:240,:]  #third 
-    if flip==-1:
-        im=torch.flip(im, (3,))
+    
+    im=im[:,:,im.size(2)//3:,:]  #third 
+    
+    # if flip==-1:
+    #     im=torch.flip(im, (3,))
     # im=im[:,:,120:240,:]  
     # im=F.local_response_norm(im, size=5)
     return im
 
 
-def Training(numEpochs=10, net=Net()):
+def training(numEpochs=10, net=Net()):
     # net=Net()
     criterion = nn.L1Loss()
-    optimizer = optim.Adam(net.parameters())
+    optimizer = optim.Adam(net.parameters(),lr=0.001)
+    # optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.8)
     steerFlip=[1,-1]
     for epoch in range(numEpochs):  # loop over the dataset multiple times
         running_loss = 0.0
         start_time = time.time()
         for i, data in enumerate(ds_train_dataloader, 0):
-            for j in steerFlip:
-                # get the inputs; data is a list of [inputs, labels]
-                inputs, labels = data
-                # flip image and label
-                labels=labels*j
-                inputs=imagePreprocessing(inputs ,flip=j)
-
-                # zero the parameter gradients
-                optimizer.zero_grad()
-                # forward + backward + optimize
-                outputs = net(inputs)
-                # print(outputs)
-                loss = criterion(outputs, labels.unsqueeze(1))
-                loss.backward()
-                optimizer.step()
-                # print statistics
-                running_loss += loss.item()
-                # if i % 20 == 19:    # print every 2000 mini-batches
-                #     print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 20:.3f}')
-                #     running_loss = 0.0
+            
+            # get the inputs; data is a list of [inputs, labels]
+            inputs, labels = data
+            # flip image and label
+            # labels=labels
+            inputs=imagePreprocessing(inputs)
+            
+            # zero the parameter gradients
+            optimizer.zero_grad()
+            # forward + backward + optimize
+            outputs = net(inputs)
+            # print(outputs)
+            loss = criterion(outputs, labels.unsqueeze(1))
+            loss.backward()
+            optimizer.step()
+            # print statistics
+            running_loss += loss.item()
+            if i % 20 == 19:    # print every 2000 mini-batches
+                print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 20:.3f}')
+                running_loss = 0.0
         print('')
-        print(f'Avergae loss: {running_loss/len(ds_train)}')
+        # print(f'Avergae loss: {running_loss/len(ds_train)}')
         # end for over minibatches epoch finishes
         end_time = time.time()
+        # plt.show()
         
 
         # test the network every epoch on test example
@@ -123,24 +134,28 @@ def Training(numEpochs=10, net=Net()):
             for data in ds_test_dataloader:
                 # load images and labels
                 images, labels = data
+                labels=labels
                 images=imagePreprocessing(images)
                 output = net(images)
+                
+                # print(output)
                 # note here we take the max of all probability
                 predicted = output[0]#torch.max(output, 1)
-                # print(output)
+                # print(output, labels)
                 
                 predLables.append(predicted)
                 GT.append(labels)
                 total += labels.size(0)
-                correct += (abs(predicted - labels)<0.1).sum().item()
-        
+                correct += (abs(predicted - labels)).sum().item()
+            
         print('Epoch', epoch+1, 'took', end_time-start_time, 'seconds')
-        print('Accuracy of the network after', epoch+1, 'epochs is' , 100*correct/total)
+        print('Error of the network after', epoch+1, 'epochs is' , correct/total)
         
     print('Finished Training')
     torch.save(net.state_dict(), TestPATH)
 
-def Testing(TestPATH, model=Net(), plot=True):
+
+def testing(TestPATH, model=Net(), plot=True):
     # model = Net()
     model.load_state_dict(torch.load(TestPATH))
     model.eval()
@@ -179,8 +194,10 @@ def Testing(TestPATH, model=Net(), plot=True):
         plt.show()
 
 
-Training(numEpochs=30)
-Testing(TestPATH)
+# analyseData()
+training(numEpochs=20)
+
+testing(TestPATH)
 
 # Training(numEpochs=10, net=ConvMixer(124,8))
 # Testing(TestPATH,  model=ConvMixer())
