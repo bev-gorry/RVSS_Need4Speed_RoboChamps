@@ -22,8 +22,9 @@ trainingFolderName=day2Filenames[0]
 
 '''TrainedNetworks'''
 folderName='driveNetworks/'
-TestPATH = f'./{folderName}Network_L1loss_CropThird_ConvMixer.pth'
-# TestPATH = f'./{folderName}Network_L1loss_CropThird_MoreData.pth'
+# TestPATH = f'./{folderName}Network_L1loss_CropThird_ConvMixer.pth'
+# TestPATH = f'./{folderName}Network_L1loss_CropThird_MoreData.pth' #47 but more consistent
+TestPATH = f'./{folderName}Network_L1loss_CropThird_MoreData_2.pth'  #45
 # TestPATH = f'./{folderName}Network_L1Loss_PrevAngl.pth'           #34
 # TestPATH = f'./{folderName}Network_MSEloss_CropThird.pth'
 # TestPATH = f'./{folderName}Network_L1loss_CropHalf_Normalise.pth' #48
@@ -64,8 +65,10 @@ def analyseData():
     print(np.unique(all_y, return_counts = True))
 
 
-def imagePreprocessing(im):
+def imagePreprocessing(im, flip=1):
     im=im[:,:,60:240,:]  #third 
+    if flip==-1:
+        im=torch.flip(im, (3,))
     # im=im[:,:,120:240,:]  
     # im=F.local_response_norm(im, size=5)
     return im
@@ -75,29 +78,31 @@ def Training(numEpochs=10, net=Net()):
     # net=Net()
     criterion = nn.L1Loss()
     optimizer = optim.Adam(net.parameters())
-
+    steerFlip=[1,-1]
     for epoch in range(numEpochs):  # loop over the dataset multiple times
         running_loss = 0.0
         start_time = time.time()
         for i, data in enumerate(ds_train_dataloader, 0):
-            # get the inputs; data is a list of [inputs, labels]
-            inputs, labels = data
-            labels=labels
-            inputs=imagePreprocessing(inputs)
+            for j in steerFlip:
+                # get the inputs; data is a list of [inputs, labels]
+                inputs, labels = data
+                # flip image and label
+                labels=labels*j
+                inputs=imagePreprocessing(inputs ,flip=j)
 
-            # zero the parameter gradients
-            optimizer.zero_grad()
-            # forward + backward + optimize
-            outputs = net(inputs)
-            # print(outputs)
-            loss = criterion(outputs, labels.unsqueeze(1))
-            loss.backward()
-            optimizer.step()
-            # print statistics
-            running_loss += loss.item()
-            # if i % 20 == 19:    # print every 2000 mini-batches
-            #     print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 20:.3f}')
-            #     running_loss = 0.0
+                # zero the parameter gradients
+                optimizer.zero_grad()
+                # forward + backward + optimize
+                outputs = net(inputs)
+                # print(outputs)
+                loss = criterion(outputs, labels.unsqueeze(1))
+                loss.backward()
+                optimizer.step()
+                # print statistics
+                running_loss += loss.item()
+                # if i % 20 == 19:    # print every 2000 mini-batches
+                #     print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 20:.3f}')
+                #     running_loss = 0.0
         print('')
         print(f'Avergae loss: {running_loss/len(ds_train)}')
         # end for over minibatches epoch finishes
@@ -131,7 +136,7 @@ def Training(numEpochs=10, net=Net()):
     print('Finished Training')
     torch.save(net.state_dict(), TestPATH)
 
-def Testing(TestPATH, model=Net()):
+def Testing(TestPATH, model=Net(), plot=True):
     # model = Net()
     model.load_state_dict(torch.load(TestPATH))
     model.eval()
@@ -159,17 +164,26 @@ def Testing(TestPATH, model=Net()):
             correct += (abs(predicted - labels)<0.1).sum().item()
     
     print('Accuracy of the network after is' , 100*correct/total)
+    if plot==True:
+        fig, (ax1,ax2)= plt.subplots(1,2)
+        ax1.plot(np.arange(total), GT, 'g.-')
+        ax1.plot(np.arange(total), predLables, 'm.-')
 
-    fig, (ax1,ax2)= plt.subplots(1,2)
-    ax1.plot(np.arange(total), GT, 'g.-')
-    ax1.plot(np.arange(total), predLables, 'm.-')
+        ax2.hist(abs(np.array(GT)-np.array(predLables)), bins=50)
+        ax2.set_xlim([0,3.14])
 
-    ax2.hist(abs(np.array(GT)-np.array(predLables)), bins=50)
-    ax2.set_xlim([0,3.14])
-
-    plt.show()
+        plt.show()
 
 
-Training(numEpochs=10, net=ConvMixer(124,8))
+Training(numEpochs=30)
+Testing(TestPATH)
+
+# Training(numEpochs=10, net=ConvMixer(124,8))
 # Testing(TestPATH,  model=ConvMixer())
 
+'''Loop through test data'''
+# for i in range(7):
+#     testingFolderName=day1Filenames[i] #[5]
+#     ds_test = SteerDataSet(os.path.join(script_path, '..', 'data', 'train', testingFolderName), '.jpg', transform)
+#     ds_test_dataloader = DataLoader(ds_test,batch_size=1,shuffle=True)
+#     Testing(TestPATH,  model=Net(), plot=False)
