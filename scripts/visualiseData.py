@@ -6,11 +6,11 @@ import numpy as np
 import shutil
 
 day1Filenames=['TrackShort_Kd=10', 'TrackShort_Kd=15', 'Track0_Kd=5_Ka=15','Track0_Kd=10_Ka=25', 'Track0_Kd=20_Ka=25', 'Track1_Kd=5_Ka=15', 'TrackMed_Kd=10', 'TrackLong']
-day2Filenames=['TrackLong_Kd=10', 'TrackSegments']
+day2Filenames=['TrackLong_Kd=10', 'TrackLongest_Kd=10_Ka=10', 'TrackSegments']
 folder = f'./data/train/{day2Filenames[1]}'
 
 
-def visualise(folderName=f'./data/train/EvenDistribution'):
+def combineData(folderName=f'./data/train/EvenDistribution'):
     id=0
     for filename in os.listdir(folder):
         if filename.endswith(('.png', '.jpg', '.jpeg')):  # Check if the file is an image
@@ -55,5 +55,15 @@ def visualise(folderName=f'./data/train/EvenDistribution'):
             # plt.pause(0.1)
 
     # plt.show()
-        
+
+def visualise(folderName=f'./data/train/EvenDistribution'):
+    id=0
+    for filename in os.listdir(folder):
+        if filename.endswith(('.png', '.jpg', '.jpeg')):  # Check if the file is an image
+            img_path = os.path.join(folder, filename)
+            img = cv2.imread(img_path)     
+            plt.imshow(img)
+            plt.pause(0.1)
+    plt.show()   
+# combineData()
 visualise()

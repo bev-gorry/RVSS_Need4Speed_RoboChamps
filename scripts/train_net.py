@@ -10,7 +10,7 @@ import time
 import matplotlib.pyplot as plt
 from steerDS import SteerDataSet, Net, Old_Net, ConvMixer, transform, imagePreprocessing
 
-'''DAY1 Data COllection'''
+'''DAY1 Data Collection'''
 day1Filenames=['TrackShort_Kd=10', 'TrackShort_Kd=15', 'Track0_Kd=5_Ka=15','Track0_Kd=10_Ka=25', 'Track0_Kd=20_Ka=25', 'Track1_Kd=5_Ka=15', 'TrackMed_Kd=10', 'TrackLong']
 # trainingFolderName=day1Filenames[7]
 testingFolderName=day1Filenames[7] #[5]
@@ -22,7 +22,6 @@ testingFolderName=day2Filenames[0]
 
 '''DAY4 Morning Data Collection'''
 day4Filenames=['TrackLongest_Kd=10_Ka=10','TrackSegments', 'EvenDistribution']
-# day4Filenames=['EvenDistribution','TrackSegments', 'EvenDistribution']
 trainingFolderName=day4Filenames[1]
 testingFolderName=day4Filenames[0]
 
@@ -31,7 +30,8 @@ folderName='driveNetworks/'
 # TestPATH = f'./{folderName}Network_L1loss_CropThird_ConvMixer.pth'
 # TestPATH = f'./{folderName}Network_L1loss_CropThird_MoreData.pth' #47 but more consistent
 # TestPATH = f'./{folderName}Network_L1loss_CropThird_MoreData_2.pth'  #45
-TestPATH = f'./{folderName}Network_L1loss_CropThird_Segments_MoreData3.pth'   #
+# TestPATH = f'./{folderName}Network_L1loss_CropThird_Segments_Even.pth'   #
+TestPATH = f'./{folderName}Network_L1loss_CropThird_Segments_MoreConv2.pth'   #
 # TestPATH = f'./{folderName}Network_L1loss_CropThird_Segments_SGD.pth' #40.6
 # TestPATH = f'./{folderName}Network_L1Loss_PrevAngl.pth'           #34
 # TestPATH = f'./{folderName}Network_MSEloss_CropThird.pth'
@@ -75,18 +75,18 @@ def analyseData():
 def training(numEpochs=10, net=Net()):
     # net=Net()
     criterion = nn.L1Loss()
-    optimizer = optim.Adam(net.parameters(),lr=0.001)
+    optimizer = optim.Adam(net.parameters())
     # optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.8)
     steerFlip=[1,-1]
     for epoch in range(numEpochs):  # loop over the dataset multiple times
         running_loss = 0.0
         start_time = time.time()
         for i, data in enumerate(ds_train_dataloader, 0):
-            
+            # for j in steerFlip:
             # get the inputs; data is a list of [inputs, labels]
             inputs, labels = data
             # flip image and label
-            # labels=labels
+            # labels=labels*j
             inputs=imagePreprocessing(inputs)
             
             # zero the parameter gradients
@@ -180,7 +180,7 @@ def testing(TestPATH, model=Net(), plot=True):
 
 
 # analyseData()
-training(numEpochs=100)
+training(numEpochs=30)
 
 testing(TestPATH)
 
