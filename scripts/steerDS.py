@@ -17,7 +17,7 @@ import torch.optim as optim
 transform = transforms.Compose(
 [transforms.ToTensor(),
     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
-    transforms.Resize((120,160))]
+    transforms.Resize((100,100))]
     )
 
 class SteerDataSet(Dataset):
@@ -52,63 +52,63 @@ class SteerDataSet(Dataset):
         return img, steering
 
 
-# class Net(nn.Module):
-#     def __init__(self):
-#         super().__init__()
-#         self.pool = nn.MaxPool2d(2, 2)
-#         self.conv1 = nn.Conv2d(3, 6, 5)
-#         self.conv2 = nn.Conv2d(6, 16, 5)
-#         # self.conv3 = nn.Conv2d(16, 32, 5)
-#         # self.conv4 = nn.Conv2d(32, 64, 5)
-#         # self.conv3 = nn.Conv2d(6, 16, 5)
-#         # self.fc1 = nn.Linear(4576,520)
-#         self.fc1 = nn.Linear(51744,120)
-#         # self.fc2 = nn.Linear(520, 84)
-#         self.fc3 = nn.Linear(120, 1)
-
-#     def forward(self, x):
-#         x = self.pool(F.relu(self.conv1(x)))
-#         x = self.pool(F.relu(self.conv2(x)))
-
-#         x = torch.flatten(x, 1) # flatten all dimensions except batch
-#         # print(x.size())
-#         x = F.relu(self.fc1(x))
-#         # x = F.relu(self.fc2(x))
-#         x = torch.sigmoid(self.fc3(x))
-#         x=(x-0.5)*2*3.14
-#         return x
-
-
 class Net(nn.Module):
     def __init__(self):
         super().__init__()
         self.pool = nn.MaxPool2d(2, 2)
         self.conv1 = nn.Conv2d(3, 6, 5)
         self.conv2 = nn.Conv2d(6, 16, 5)
-        self.conv3 = nn.Conv2d(16, 32, 5)
+        # self.conv3 = nn.Conv2d(16, 32, 5)
         # self.conv4 = nn.Conv2d(32, 64, 5)
         # self.conv3 = nn.Conv2d(6, 16, 5)
-        self.fc1 = nn.Linear(3072,120)
-        # self.fc1 = nn.Linear(33264,120)
+        # self.fc1 = nn.Linear(4576,520)
+        self.fc1 = nn.Linear(51744,120)
         # self.fc2 = nn.Linear(520, 84)
         self.fc3 = nn.Linear(120, 1)
 
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
         x = self.pool(F.relu(self.conv2(x)))
-        x = self.pool(F.relu(self.conv3(x)))
-        # x = self.pool(F.relu(self.conv4(x)))
 
         x = torch.flatten(x, 1) # flatten all dimensions except batch
         # print(x.size())
         x = F.relu(self.fc1(x))
         # x = F.relu(self.fc2(x))
         x = torch.sigmoid(self.fc3(x))
-        x=(x-0.5)*2
+        x=(x-0.5)*2*3.14
         return x
 
 
-class NetFriday(nn.Module):
+# class Net(nn.Module):
+#     def __init__(self):
+#         super().__init__()
+#         self.pool = nn.MaxPool2d(2, 2)
+#         self.conv1 = nn.Conv2d(3, 6, 5)
+#         self.conv2 = nn.Conv2d(6, 16, 5)
+#         self.conv3 = nn.Conv2d(16, 32, 5)
+#         # self.conv4 = nn.Conv2d(32, 64, 5)
+#         # self.conv3 = nn.Conv2d(6, 16, 5)
+#         self.fc1 = nn.Linear(3072,120)
+#         # self.fc1 = nn.Linear(33264,120)
+#         # self.fc2 = nn.Linear(520, 84)
+#         self.fc3 = nn.Linear(120, 1)
+
+#     def forward(self, x):
+#         x = self.pool(F.relu(self.conv1(x)))
+#         x = self.pool(F.relu(self.conv2(x)))
+#         x = self.pool(F.relu(self.conv3(x)))
+#         # x = self.pool(F.relu(self.conv4(x)))
+
+#         x = torch.flatten(x, 1) # flatten all dimensions except batch
+#         # print(x.size())
+#         x = F.relu(self.fc1(x))
+#         # x = F.relu(self.fc2(x))
+#         x = torch.sigmoid(self.fc3(x))
+#         x=(x-0.5)*2
+#         return x
+
+
+class Net(nn.Module):
     def __init__(self):
         super().__init__()
         self.pool = nn.MaxPool2d(2, 2)

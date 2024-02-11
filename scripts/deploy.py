@@ -84,9 +84,9 @@ try:
         # im=im[:,:,60:240,:]
 
         #TO DO: apply any necessary image transforms
-        cv2.imshow("BotCam", im_cv)
-        cv2.imshow("Stop Sign Mask", mask)
-        cv2.waitKey(10)
+        # cv2.imshow("BotCam", im_cv)
+        # cv2.imshow("Stop Sign Mask", mask)
+        # cv2.waitKey(10)
 
         #TO DO: pass image through network get a prediction
         output_tensor = model(imagePreprocessing(transform(im_cv).unsqueeze(0)))
